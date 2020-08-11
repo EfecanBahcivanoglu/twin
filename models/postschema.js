@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const PostSchema = mongoose.Schema ({
+    _id: mongoose.Schema.Types.ObjectId,
     title: {
         type: String,
         required: true
@@ -9,10 +10,11 @@ const PostSchema = mongoose.Schema ({
         type: String,
         required: true
     },
-    date: {
-        type: Date,
-        default: Date.now
-     }
+    postedBy: {
+        type: String,
+        required: true
+    }
+
 
 });
 

@@ -8,8 +8,10 @@ app.use(bodyParser.json());
 
 //Import routes
 const postsRoute = require('./routes/posts');
+const usersRoute = require('./routes/users');
 
 app.use('/posts', postsRoute);
+app.use('/users', usersRoute);
 
 //Routes
 app.get('/', (req,res) => {
@@ -19,8 +21,8 @@ app.get('/', (req,res) => {
 });
 
 //Connect to DB
-mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true },() => 
-    console.log('Connected to DB')
+mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true },(error) => 
+    console.log('Connected to DB', error)
 );
 
-app.listen(2020);
+app.listen(3000);
