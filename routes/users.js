@@ -1,26 +1,25 @@
 const express = require('express');
 const router = express.Router();
-const userschema = require('../models/userschema');
+const userschema = require('../models/userSchema'); //Change the userSchema to User best app practises
 const mongoose = require("mongoose");
+const userSchema = require('../models/userSchema');
 
+//aynı nickname  error def
 
 router.post('/', async (req,res) => {
-    try{
-        console.log("ok")
-        const user = new userschema ({
-            _id: new mongoose.Types.ObjectId(),
-            nickname: req.body.nickname,
-            
-            
-        });
-        console.log("ok")
-        const p = await user.save()
-        console.log("ok")
-        res.json({
-            status:200,
+    const id = new mongoose.Types.ObjectId()
+    const user = new userschema ({
+        _id: id,
+        nickname: req.body.nickname, });
         
-        });
+    try {    
+        const p = await user.save()
+        res.json({
+            user,
+            status:200,
+            });
     }
+        
     catch (err) {
         console.log("catch")
         res.json({
@@ -31,6 +30,8 @@ router.post('/', async (req,res) => {
 }
 });
 
+
+
 router.get("/", async(req, res) => {
     try {
         const users= await userschema.find();
@@ -40,28 +41,49 @@ router.get("/", async(req, res) => {
         } 
 });            
 router.get('/:userId', async (req,res) => {
-    try {
-     const user = await userschema.findById(req.params.userId);
-     res.json(user);
+    
+     try {
+        const user = await userschema.findById(req.params.userId);
+        res.json(user);
     } catch (err) {
         res.json({message: err});
     }    
- });
-     
+
+}); 
+  
+router.patch('/:userId', async (req,res) => {
+    try {
+        const userId = req.params.userId;
+        const length =req.body.nickname.length
+        console.log(length)
+        if (length < 4) {
+            throw res.json("Nickname should be more than 3 characters")
+        }
+        
+        
+        const update = await userSchema.updateOne({ _id: userId },
+                { $set: {nickname: req.body.nickname} });
+        res.json({
+          isSuccess: true,
+          status: 200,
+        });
     
- router.patch('/:userId', async (req,res) => {
-     try {
-         const updatedUser = await userschema.updateOne({_id: req.params.userId},
-         { $set: {nickname: req.body.nickname} });
-         res.json(updatedUser)
-     }
-     catch (err) {
-         res.json({message: err});
-     }
- });
+      }
+      catch (err) {
+        res.json({
+          isSuccess: false,
+          status: 404,
+          // errDesc: "Update profile error. " + err,
+        });
+        console.log("UPDATE PROFILE ERROR", err)
+      }
+    });
+    
  
+
  router.delete("/:userId", async(req, res) => {
      try {
+         //Status inactive data silinmez
          const removedUser=await userschema.remove({_id: req.params.userId})
          res.json(removedUser);
  
