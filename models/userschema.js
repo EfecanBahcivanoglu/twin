@@ -9,6 +9,12 @@ const userSchema = mongoose.Schema ({
         minlength: 4,
         maxlength: 15,
         required: true
+    },
+
+    activityStatus: {
+        type: Boolean,
+        default: true
+
     }
 
 });

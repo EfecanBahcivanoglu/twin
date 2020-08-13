@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const postschema = require('../models/postSchema');
 const mongoose = require("mongoose");
-
+const userSchema = require('../models/userSchema');
 
 router.post('/', async (req,res) => {
     try{
@@ -11,10 +11,14 @@ router.post('/', async (req,res) => {
             title: req.body.title,
             description: req.body.description,
             postedBy: req.body.postedBy
+            
         });
+        
         const p = await post.save()
+        
         res.json({
-            status:200,     
+            isSuccess: true,
+            status:200  
         });
     }
     catch (err) {
@@ -33,18 +37,25 @@ router.get('/', async (req,res) => {
        const posts= await postschema.find();
        res.json(posts);    
    } catch (err) {
-       res.json({message:err});
+    res.json({
+        isSuccess: false,
+        status: 400,
+        errDesc: "Unable to get the posts " + err,
+    });
    } 
 });
 //Get all the posts belongs to a user
 router.get('/byname', async (req,res) => {
-    const user = req.body.nickname
-    console.log(user)
+    const user = req.body.nickname;
     try {
         const posts= await postschema.find({"postedBy" : user});
         res.json(posts);    
     } catch (err) {
-        res.json({message:err});
+        res.json({
+            isSuccess: false,
+            status: 400,
+            errDesc: "Unable to reach to the post by name " + err,
+        });
     } 
  });
 
@@ -53,32 +64,56 @@ router.get('/:postId', async (req,res) => {
     const post = await postschema.findById(req.params.postId);
     res.json(post);
    } catch (err) {
-       res.json({message: err});
+    res.json({
+        isSuccess: false,
+        status: 400,
+        errDesc: "Unable to reach to the post by postId " + err,
+    });
    }    
 });
     
    
 router.patch('/:postId', async (req,res) => {
     try {
-        //Only title changes + null 
-         /*const updatedPost = await postschema.updateOne({_id: req.params.postId},
-        { $set: {title: req.body.title}, },
-        { $set: {description: req.body.description}}); */
-        const params = req.body;
-        const updatedPost = await userSchema.updateOne({ _id: postId }, params);
+        const title = req.body.title;
+        const description= req.body.description;
         
+        
+
+        if (title) {
+            const updatedPost = await postschema.updateOne({_id: req.params.postId},
+                { $set: {title: req.body.title}, });
+        }
+
+        if (description) {
+            const updatedPost = await postschema.updateOne({_id: req.params.postId},
+                { $set: {description: req.body.description}}); 
+                
+        }
+        
+        const post = await postschema.findById(req.params.postId);
+        res.json(post);
+      
             
-        res.json(updatedPost)
+       
     }
     catch (err) {
-        res.json({message: err});
+        res.json({
+            isSuccess: false,
+            status: 400,
+            errDesc: "Unable to update post " + err, 
+        });
     }
 });
 
 router.delete("/:postId", async(req, res) => {
     try {
         const removedPost=await postschema.remove({_id: req.params.postId})
-        res.json(removedPost);
+        
+        res.json({
+            isSuccess: true,
+            status:200  
+        });
 
     }
     catch (err) {   

@@ -4,7 +4,8 @@ const userschema = require('../models/userSchema'); //Change the userSchema to U
 const mongoose = require("mongoose");
 const userSchema = require('../models/userSchema');
 
-//aynı nickname  error def
+
+
 
 router.post('/', async (req,res) => {
     const id = new mongoose.Types.ObjectId()
@@ -31,23 +32,31 @@ router.post('/', async (req,res) => {
 });
 
 
-
 router.get("/", async(req, res) => {
     try {
         const users= await userschema.find();
         res.json(users);    
         } catch (err) {
-            res.json({message:err});
+            res.json({
+                isSuccess: false,
+                status: 404,
+                errDesc: "Getting user list error" + err,
+            });
         } 
 });            
+
 router.get('/:userId', async (req,res) => {
-    
-     try {
+    try {
         const user = await userschema.findById(req.params.userId);
-        res.json(user);
+        res.json(user.nickname);
+        
     } catch (err) {
-        res.json({message: err});
-    }    
+        res.json({
+          isSuccess: false,
+          status: 404,
+          errDesc: "Getting user by userId error" + err,
+        });
+    }
 
 }); 
   
@@ -55,12 +64,16 @@ router.patch('/:userId', async (req,res) => {
     try {
         const userId = req.params.userId;
         const length =req.body.nickname.length
+        const nickname = req.body.nickname
+        const user = await userschema.findById(req.params.userId);
+        
         console.log(length)
         if (length < 4) {
             throw res.json("Nickname should be more than 3 characters")
         }
-        
-        
+        if (user.nickname == nickname) {
+            throw res.json("You cannot change the nickname to same thing")
+        }
         const update = await userSchema.updateOne({ _id: userId },
                 { $set: {nickname: req.body.nickname} });
         res.json({
@@ -73,29 +86,36 @@ router.patch('/:userId', async (req,res) => {
         res.json({
           isSuccess: false,
           status: 404,
-          // errDesc: "Update profile error. " + err,
+          errDesc: "Update profile error. " + err,
         });
-        console.log("UPDATE PROFILE ERROR", err)
+        
       }
     });
     
  
-
- router.delete("/:userId", async(req, res) => {
+router.delete("/:userId", async(req, res) => {
      try {
-         //Status inactive data silinmez
-         const removedUser=await userschema.remove({_id: req.params.userId})
-         res.json(removedUser);
- 
-     }
-     catch (err) {   
-         res.json({message: err});
+        const user = await userschema.findById(req.params.userId);
+        if (user.activityStatus == true) {
+         const removedUser=await userschema.findByIdAndUpdate({_id: req.params.userId},
+            { $set: {activityStatus: false} });
+            res.json({
+                message: "The user became inactive",
+                isSuccess: true,
+                status: 200,
+              });
+        }  else {
+            throw "User is already deleted"
         }
+    }
+     catch (err) {   
+        res.json({
+            isSuccess: false,
+            status: 404,
+            errDesc: "Delete user error " + err,
+        });
+     }
  });
-
-
-
-
 
 
 module.exports=router;
