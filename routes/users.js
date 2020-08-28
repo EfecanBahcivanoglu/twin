@@ -35,7 +35,11 @@ router.post('/', async (req,res) => {
 router.get("/", async(req, res) => {
     try {
         const users= await userschema.find();
-        res.json(users);    
+        res.json({
+            users,
+            status: 200,
+            
+        });    
         } catch (err) {
             res.json({
                 isSuccess: false,
@@ -48,7 +52,10 @@ router.get("/", async(req, res) => {
 router.get('/:userId', async (req,res) => {
     try {
         const user = await userschema.findById(req.params.userId);
-        res.json(user.nickname);
+        res.json({
+            user,
+            status: 200,
+        });
         
     } catch (err) {
         res.json({
