@@ -45,22 +45,10 @@ router.get('/', async (req,res) => {
    } 
 });
 //Get all the posts belongs to a user
-router.get('/byname', async (req,res) => {
-    const user = req.body.nickname;
-    try {
-        const posts= await postschema.find({"postedBy" : user});
-        res.json(posts);    
-    } catch (err) {
-        res.json({
-            isSuccess: false,
-            status: 400,
-            errDesc: "Unable to reach to the post by name " + err,
-        });
-    } 
- });
 
 router.get('/:postId', async (req,res) => {
    try {
+    console.log('OK');
     const post = await postschema.findById(req.params.postId);
     res.json(post);
    } catch (err) {
